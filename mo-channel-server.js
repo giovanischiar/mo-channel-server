@@ -105,7 +105,7 @@ function startFileServer(port, root) {
 	 		`| HTTP File Server error  |\n` +
 	 		`+-------------------------+\n`
 	 	)
-	 	console.log(`${data}`)
+	 	console.log(`${error}`)
 	 	console.log(`+-------------------------+`)
 	});
 
@@ -115,7 +115,6 @@ function startFileServer(port, root) {
 	 		`| HTTP File Server close  |\n`,
 	 		`+-------------------------+\n`
 	 	)
-	 	console.log(`${data}`)
 	  console.log(`child process exited with code ${code}`)
 	  console.log(`+-------------------------+`)
 	});
