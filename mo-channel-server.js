@@ -2,6 +2,7 @@ const express = require('express')
 const fs = require('fs')
 const app = express()
 const IP = require('ip');
+const { spawn } = require("child_process");
 
 function moChannelServer() {
 	checkParameters()
@@ -67,12 +68,57 @@ function onFileRead(contents) {
 			printUsage()
 			return
 		}
-
+		console.log("Starting HTTP File Server")
+		startFileServer(fileServerPort, root)
 		startServer(port, fileServerPort, root)
 	} else {
 		console.log("Error: bad formed JSON")
 		printUsage()
 	}	
+}
+
+function startFileServer(port, root) {
+	const fileServer = spawn("http-server", [root, "--no-dotfiles", "--port", port])
+
+	fileServer.stdout.on("data", data => {
+	 	console.log(
+	 		`+-------------------------+\n` +
+	 		`| HTTP File Server stdout |\n` +
+	 		`+-------------------------+\n`
+	 	)
+	 	console.log(`${data}`)
+	});
+
+	fileServer.stderr.on("data", data => {
+	 	console.log(
+	 		`+-------------------------+\n` +
+	 		`| HTTP File Server stderr |\n` +
+	 		`+-------------------------+\n`
+	 	)
+	 	console.log(`${data}`)
+	 	console.log(`+-------------------------+`)
+	});
+
+	fileServer.on('error', (error) => {
+	 	console.log(
+	 		`+-------------------------+\n` +
+	 		`| HTTP File Server error  |\n` +
+	 		`+-------------------------+\n`
+	 	)
+	 	console.log(`${data}`)
+	 	console.log(`+-------------------------+`)
+	});
+
+	fileServer.on("close", code => {
+		console.log(
+	 		`+-------------------------+\n`,
+	 		`| HTTP File Server close  |\n`,
+	 		`+-------------------------+\n`
+	 	)
+	 	console.log(`${data}`)
+	  console.log(`child process exited with code ${code}`)
+	  console.log(`+-------------------------+`)
+	});
 }
 
 function startServer(port, fileServerPort, root) {
