@@ -78,7 +78,7 @@ function onFileRead(contents) {
 }
 
 function startFileServer(port, root) {
-	const fileServer = spawn("http-server", [root, "--no-dotfiles", "--port", port])
+	const fileServer = spawn("node_modules/http-server/bin/http-server", [root, "--no-dotfiles", "--port", port])
 
 	fileServer.stdout.on("data", data => {
 	 	console.log(
