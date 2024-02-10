@@ -26,6 +26,35 @@ function checkParameters() {
 	if (process.argv.length == 2) {
 		printUsage()
 		return
+	} else if (process.argv.length > 4) {
+		let portLabelIndex = process.argv.indexOf("--port")
+		let portIndex = portLabelIndex + 1
+		let fileServerPortLabelIndex = process.argv.indexOf("--file-server-port")
+		let fileServerPortIndex = fileServerPortLabelIndex + 1
+		let rootLabelIndex = process.argv.indexOf("--root")
+		let rootIndex = rootLabelIndex + 1
+		if (
+			portLabelIndex != -1 && 
+			fileServerPortLabelIndex != -1 && 
+			rootLabelIndex != -1 &&
+			portIndex < process.argv.length &&
+			fileServerPortLabelIndex < process.argv.length &&
+			rootLabelIndex < process.argv.length
+		) {
+			let port =　process.argv[portIndex]
+			let fileServerPort = process.argv[fileServerPortIndex]
+			let root = process.argv[rootIndex]
+			if (checkArguments(port, fileServerPort, root)) {
+				startServers(port, fileServerPort, root)
+				return
+			} else {
+				printUsage()
+				return
+			}
+		} else {
+			printUsage()
+			return
+		}
 	}
 
 	var configLabelIndex = process.argv.indexOf("--config")
@@ -54,27 +83,38 @@ function onFileRead(contents) {
 		return 
 	}
 	let { port, fileServerPort, root } = json
-	if (port != undefined && fileServerPort != undefined && root != undefined) {
-		if (port == fileServerPort) {
-			console.log("Error: port and fileServerPort must be different")
-			printUsage()
-			return
-		}
 
-		try {
-			fs.readdirSync(root)
-		} catch (e) {
-			console.log(e)
-			printUsage()
-			return
+	if (checkArguments(port, fileServerPort, root)) {
+		startServers(port, fileServerPort, root)
+	}
+}
+
+function checkArguments(port, fileServerPort, root) {
+	if (port != undefined && fileServerPort != undefined && root != undefined) {
+		if (!Number.isNaN(Number(port)) && !Number.isNaN(Number(fileServerPort))) {
+			if (port == fileServerPort) {
+				console.log("Error: port and fileServerPort must be different")
+				printUsage()
+				return false
+			}
+			try {
+				fs.readdirSync(root)
+			} catch (e) {
+				console.log(e)
+				printUsage()
+				return false
+			}
+			return true
 		}
-		console.log("Starting HTTP File Server")
-		startFileServer(fileServerPort, root)
-		startServer(port, fileServerPort, root)
 	} else {
 		console.log("Error: bad formed JSON")
-		printUsage()
-	}	
+		return false
+	}
+}
+
+function startServers(port, fileServerPort, root) {
+	startFileServer(fileServerPort, root)
+	startServer(port, fileServerPort, root)
 }
 
 function startFileServer(port, root) {
