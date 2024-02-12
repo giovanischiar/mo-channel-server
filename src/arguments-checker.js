@@ -10,8 +10,8 @@ export class ArgumentsChecker {
 			`Usage: ${fileName} --config config.json`,
 			"Create a file config.json",
 			"{", 
-			"    port          : /* Server port number e.g.: 8080 */,",
-			"    fileServerPort: /* File server port number e.g.: 3000 (it can't be the same as server port) */,",
+			"    port          : /* Server port number e.g.: 3000 */,",
+			"    fileServerPort: /* File server port number e.g.: 8080 (it can't be the same as server port) */,",
 			"    root          : /* Path to tv shows directory e.g.: \"path/to/tv-shows/\"*/",
 			"}"
 		]
@@ -21,7 +21,20 @@ export class ArgumentsChecker {
 	checkParams = (onChecked) => {
 		this.onChecked = onChecked
 		if (this.entryArguments.length == 2) {
-			onChecked()
+			let self = this
+			let execPath = process.execPath.split("/")
+			console.log(process.execPath)
+			execPath.splice(-1)
+			let file = execPath.join("/") + "/config.json"
+			fs.readFile(file, function(err, data) { 
+				if (!err) {
+					self.checkFileContent(data)
+					return
+				} else {
+					self.errorContent = [err, ...self.usageContent]
+					self.onChecked()
+				}
+			});
 			return
 		}
 
@@ -66,7 +79,7 @@ export class ArgumentsChecker {
 			});
 		} else {
 			onChecked()
-		}	
+		}
 	}
 
 	checkFileContent = (contents) => {

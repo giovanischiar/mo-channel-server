@@ -1,8 +1,31 @@
 {
-  "type": "module",
+  "name": "mo-channel-server",
   "dependencies": {
     "express": "^4.18.2",
     "http-server": "^14.1.1",
-    "ip": "^2.0.0"
+    "ip": "^2.0.0",
+    "pkg": "^5.8.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9"
+  },
+  "bin": "mo-channel-server.js",
+  "main": "mo-channel-server.js",
+  "scripts": {
+    "build": "npx babel src/*.js -d build; npx pkg ./package.json",
+    "start-macos": "./dist/mo-channel-server-node18-macos",
+    "start-linux": "./dist/mo-channel-server-node18-linux",
+    "start-windows": "./dist/mo-channel-server-node18-win"
+  },
+  "pkg": {
+    "scripts": ["mo-channel-server.js", "build/**/*.js"], 
+    "targets": [
+      "node18-macos",
+      "node18-linux",
+      "node16-win"
+    ],
+    "outputPath": "dist"
   }
 }

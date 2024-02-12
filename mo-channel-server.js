@@ -1,3 +1,4 @@
-import { main } from './src/main.js'
+"use strict";
 
-main(process.argv)
+var _main = require("./build/main.js");
+(0, _main.main)(process.argv);

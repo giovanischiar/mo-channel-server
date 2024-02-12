@@ -1,4 +1,5 @@
 import { spawn } from 'child_process'
+import { createServer } from 'http-server'
 
 export class FileServer {
 	constructor(port, root, messenger) {
@@ -8,45 +9,17 @@ export class FileServer {
 	}
 
 	start = () => {
-		const fileServer = spawn(
-			"node_modules/http-server/bin/http-server", 
-			[this.root, "--no-dotfiles", "--port", this.port]
+		let server = createServer({root: this.root, showDotfiles: false})
+		server.listen(this.port, () => {
+			let i = 0
+			let horizontalFrame = ""
+			while (i++ < this.port.toString().length) { horizontalFrame += "-"}
+		 	this.messenger([
+		 		`+---------------------------------${horizontalFrame}-+`,
+		 		`| HTTP File Server created. Port: ${this.port} |`,
+		 		`+---------------------------------${horizontalFrame}-+`,
+		 	])
+			}
 		)
-
-		fileServer.stdout.on("data", data => {
-		 	this.messenger([
-		 		`+-------------------------+`,
-		 		`| HTTP File Server stdout |`,
-		 		`+-------------------------+`,
-		 		`${data}`
-		 	])
-		});
-
-		fileServer.stderr.on("data", data => {
-		 	this.messenger([
-		 		`+-------------------------+`,
-		 		`| HTTP File Server stderr |`,
-		 		`+-------------------------+`,
-		 		`${data}`
-		 	])
-		});
-
-		fileServer.on('error', (error) => {
-		 	this.messenger([
-		 		`+-------------------------+`,
-		 		`| HTTP File Server error  |`,
-		 		`+-------------------------+`,
-		 		`${error}`
-		 	])
-		});
-
-		fileServer.on("close", code => {
-			this.messenger([
-		 		`+-------------------------+`,
-		 		`| HTTP File Server close  |`,
-		 		`+-------------------------+`,
-		 		`child process exited with code ${code}`
-		 	])
-		});
 	}
 }
