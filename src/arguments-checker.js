@@ -1,8 +1,9 @@
 import fs from 'fs'
+import path from 'path'
 
 export class ArgumentsChecker {
 	constructor(entryArguments) {
-		let fileNames = entryArguments[1].split("/")
+		let fileNames = entryArguments[1].split(path.sep)
 		let fileName = fileNames[fileNames.length - 1]
 		this.entryArguments = entryArguments
 		this.isArgumentsValid = false
@@ -18,23 +19,49 @@ export class ArgumentsChecker {
 		this.errorContent = this.usageContent
 	}
 
+	paramInputter = (configJSONFilePath) => {
+		const readline = require('readline').createInterface({
+		  input: process.stdin,
+		  output: process.stdout
+		});
+
+		readline.question(
+			'Type the TV Shows Root Path:', 
+			path => {
+				let json = { root: path, port: 3000, fileServerPort: 8080 }
+				let jsonContent = JSON.stringify(json, null, 4)
+				fs.writeFile(configJSONFilePath, jsonContent, err => { if (err) { console.error(err) }})
+				readline.close()
+				let { port, fileServerPort, root } = json
+				if (this.checkArguments(port, fileServerPort, root)) {
+					this.isArgumentsValid = true
+					this.params = { port: port, fileServerPort: fileServerPort, root }
+					this.onChecked()
+				}
+			}
+		)
+	}
+
 	checkParams = (onChecked) => {
 		this.onChecked = onChecked
 		if (this.entryArguments.length == 2) {
 			let self = this
-			let execPath = process.execPath.split("/")
-			console.log(process.execPath)
+			let execPath = process.execPath.split(path.sep)
 			execPath.splice(-1)
-			let file = execPath.join("/") + "/config.json"
-			fs.readFile(file, function(err, data) { 
-				if (!err) {
-					self.checkFileContent(data)
-					return
-				} else {
-					self.errorContent = [err, ...self.usageContent]
-					self.onChecked()
-				}
-			});
+			let configJSONFilePath = execPath.join(path.sep) + `${path.sep}config.json`
+			if (fs.existsSync(configJSONFilePath)) {
+				fs.readFile(configJSONFilePath, function(err, data) { 
+					if (!err) {
+						self.checkFileContent(data)
+						return
+					} else {
+						self.errorContent = [err, ...self.usageContent]
+						self.onChecked()
+					}
+				});
+			} else {
+				this.paramInputter(configJSONFilePath)
+			}
 			return
 		}
 
